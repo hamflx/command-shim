@@ -1,8 +1,9 @@
-use std::{ffi::CStr, process::Command};
+use std::{ffi::CStr, hint::black_box, process::Command};
 
 fn main() {
-    let real_command =
-        b"<MAGIC_STRING_START______________________________________________MAGIC_STRING_END>\0";
+    let real_command = black_box(
+        b"<MAGIC_STRING_START______________________________________________MAGIC_STRING_END>\0",
+    );
     let real_command = unsafe { CStr::from_ptr(real_command.as_ptr() as _) };
     let real_command = real_command.to_str().unwrap();
     if let Some(code) = Command::new(real_command)
