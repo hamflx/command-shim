@@ -4,6 +4,10 @@ fn main() {
     let magic =
         b"<MAGIC_STRING_START______________________________________________MAGIC_STRING_END>\0";
     let command = std::env::args().skip(1).next().unwrap();
+    let output = std::env::args()
+        .skip(2)
+        .next()
+        .unwrap_or_else(|| format!("{command}.exe"));
     let position = find_subsequence(&exe_binary, magic).unwrap();
     let replacement = command
         .as_bytes()
@@ -13,7 +17,7 @@ fn main() {
         .take(magic.len())
         .collect::<Vec<_>>();
     exe_binary[position..position + magic.len()].copy_from_slice(&replacement);
-    std::fs::write(format!("{command}.exe"), exe_binary).unwrap();
+    std::fs::write(output, exe_binary).unwrap();
 }
 
 pub fn find_subsequence<T>(haystack: &[T], needle: &[T]) -> Option<usize>
