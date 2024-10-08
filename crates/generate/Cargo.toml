@@ -1,0 +1,7 @@
+[package]
+name = "generate"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shim = { artifact = ["bin:shim"], path = "../shim" }
