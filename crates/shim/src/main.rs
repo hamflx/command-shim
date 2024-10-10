@@ -1,12 +1,11 @@
-use std::{ffi::CStr, hint::black_box, process::Command};
+use std::process::Command;
+
+use libsui::find_section;
 
 fn main() {
-    let real_command = black_box(
-        b"<MAGIC_STRING_START______________________________________________MAGIC_STRING_END>\0",
-    );
-    let real_command = unsafe { CStr::from_ptr(real_command.as_ptr() as _) };
-    let real_command = real_command.to_str().unwrap();
-    if let Some(code) = Command::new(real_command)
+    let command_data = find_section("command").unwrap();
+    let command = String::from_utf8(command_data.into()).unwrap();
+    if let Some(code) = Command::new(command)
         .args(std::env::args().skip(1))
         .spawn()
         .unwrap()

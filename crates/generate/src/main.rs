@@ -1,30 +1,21 @@
+use libsui::PortableExecutable;
+
 fn main() {
-    let exe_binary = include_bytes!(env!("CARGO_BIN_FILE_SHIM_shim"));
-    let mut exe_binary = exe_binary.to_vec();
-    let magic =
-        b"<MAGIC_STRING_START______________________________________________MAGIC_STRING_END>\0";
     let command = std::env::args().skip(1).next().unwrap();
-    let output = std::env::args()
+
+    let exe_binary = include_bytes!(env!("CARGO_BIN_FILE_SHIM_shim"));
+    let exe_binary = exe_binary.to_vec();
+    let mut output = Vec::new();
+    PortableExecutable::from(&exe_binary)
+        .unwrap()
+        .write_resource("command", command.as_bytes().into())
+        .unwrap()
+        .build(&mut output)
+        .unwrap();
+
+    let output_filename = std::env::args()
         .skip(2)
         .next()
         .unwrap_or_else(|| format!("{command}.exe"));
-    let position = find_subsequence(&exe_binary, magic).unwrap();
-    let replacement = command
-        .as_bytes()
-        .iter()
-        .copied()
-        .chain(std::iter::repeat(0))
-        .take(magic.len())
-        .collect::<Vec<_>>();
-    exe_binary[position..position + magic.len()].copy_from_slice(&replacement);
-    std::fs::write(output, exe_binary).unwrap();
-}
-
-pub fn find_subsequence<T>(haystack: &[T], needle: &[T]) -> Option<usize>
-where
-    for<'a> &'a [T]: PartialEq,
-{
-    haystack
-        .windows(needle.len())
-        .position(|window| window == needle)
+    std::fs::write(output_filename, output).unwrap();
 }
